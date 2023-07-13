@@ -2,10 +2,16 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
+import { GetServerSideProps } from 'next'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export default function Home() {
+interface Props {
+  ip: string
+}
+
+export default function Home({ip}: Props) {
+  console.log('ip: ', ip)
   return (
     <>
       <Head>
@@ -111,4 +117,24 @@ export default function Home() {
       </main>
     </>
   )
+}
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  // filter access to this page due ip list
+  const allowedIps = ['177.39.236.1'] as any
+  const ip = ctx.req.headers['x-forwarded-for'] || ctx.req.socket.remoteAddress
+  console.log(ip)
+  if (!allowedIps.includes(ip)) {
+    return {
+      redirect: {
+        destination: '/404',
+        permanent: false,
+      },
+    }
+  }
+  return {
+    props: {
+      ip,
+    },
+  }
 }
